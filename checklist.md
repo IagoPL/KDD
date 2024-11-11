@@ -6,34 +6,32 @@
 - [X]  Instalar Node.js, Docker y configurar Python (si se usa Django).
 - [X]  Configurar las variables de entorno (`.env`) necesarias para desarrollo.
 
-## **2. Backend - Estructura Inicial** - **Pendiente ⏳**
+## **2. Backend - Estructura Inicial** - **Listo ✅**
 
 - [X]  Crear la estructura básica del proyecto con **Node.js y Express**.
-- [ ]  Implementar el sistema de **autenticación** (registro e inicio de sesión) con **JWT**.
-- [ ]  Configurar la **base de datos** (MongoDB) para almacenar usuarios y grupos.
-- [ ]  Crear los **endpoints REST** básicos:
-  - [ ]  `/users/signup` (Registro).
-  - [ ]  `/users/login` (Inicio de sesión).
-  - [ ]  `/groups/create` (Creación de grupos).
+- [X]  Implementar el sistema de **autenticación** (registro e inicio de sesión) con **JWT**.
+- [X]  Configurar la **base de datos** (MongoDB) para almacenar usuarios y grupos.
+- [X]  Crear los **endpoints REST** básicos:
+  - [X]  `/users/signup` (Registro).
+  - [X]  `/users/login` (Inicio de sesión).
+  - [X]  `/groups/create` (Creación de grupos).
 
-## **3. Gestión de Grupos** - **Pendiente ⏳**
+## **3. Gestión de Grupos** - **Listo ✅**
 
-- [ ]  Implementar la lógica de **creación y gestión de grupos** en el backend.
-- [ ]  Crear el **controlador** para gestionar grupos (crear, obtener y añadir miembros).
-- [ ]  Definir las **rutas REST** para los grupos:
-  - [ ]  `/groups/create` (Crear grupo).
-  - [ ]  `/groups/mygroups` (Obtener los grupos del usuario).
-  - [ ]  `/groups/add-member` (Añadir miembro a un grupo).
+- [X]  Implementar la lógica de **creación y gestión de grupos** en el backend.
+- [X]  Crear el **controlador** para gestionar grupos (crear, obtener y añadir miembros).
+- [X]  Definir las **rutas REST** para los grupos:
+  - [X]  `/groups/create` (Crear grupo).
+  - [X]  `/groups/mygroups` (Obtener los grupos del usuario).
+  - [X]  `/groups/add-member` (Añadir miembro a un grupo).
 
 ## **4. Frontend - Estructura Inicial** - **Pendiente ⏳**
 
-Crear el proyecto **React** para la interfaz de usuario.
+* [ ]  Crear el proyecto **React** para la interfaz de usuario.
+* [ ]  Configurar la estructura de carpetas y **Redux** para la gestión del estado global.
 
-Configurar la estructura de carpetas y **Redux** para la gestión del estado global.
-
-Implementar la **pantalla de inicio de sesión y registro**.
-
-Crear la **UI de la página principal** para la gestión de grupos y configuración de llamadas.
+* [ ]  Implementar la **pantalla de inicio de sesión y registro**.
+* [ ]  Crear la **UI de la página principal** para la gestión de grupos y configuración de llamadas.
 
 ## **5. WebRTC y Comunicación en Tiempo Real** - **Pendiente ⏳**
 
