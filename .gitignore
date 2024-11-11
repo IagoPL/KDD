@@ -1,0 +1,40 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Docker
+docker-compose.override.yml
+*.env
+
+# Python
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+coverage/
+*.cover
+*.pyc
+
+# Configuración de entornos virtuales
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Sistemas de compilación
+dist/
+build/
+
+# Archivos específicos de OS
+Thumbs.db
+.DS_Store
+desktop.ini
