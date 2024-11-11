@@ -1,14 +1,14 @@
 # **Checklist para el Desarrollo de "MyMeet"**
 
-## **1. Configuración del Entorno de Desarrollo** - **Pendiente ⏳**
+## **1. Configuración del Entorno de Desarrollo** - **Listo ✅**
 
-- [ ]  Configurar un repositorio en GitHub para el proyecto.
-- [ ]  Instalar Node.js, Docker y configurar Python (si se usa Django).
-- [ ]  Configurar las variables de entorno (`.env`) necesarias para desarrollo.
+- [X]  Configurar un repositorio en GitHub para el proyecto.
+- [X]  Instalar Node.js, Docker y configurar Python (si se usa Django).
+- [X]  Configurar las variables de entorno (`.env`) necesarias para desarrollo.
 
 ## **2. Backend - Estructura Inicial** - **Pendiente ⏳**
 
-- [ ]  Crear la estructura básica del proyecto con **Node.js y Express**.
+- [X]  Crear la estructura básica del proyecto con **Node.js y Express**.
 - [ ]  Implementar el sistema de **autenticación** (registro e inicio de sesión) con **JWT**.
 - [ ]  Configurar la **base de datos** (MongoDB) para almacenar usuarios y grupos.
 - [ ]  Crear los **endpoints REST** básicos:
