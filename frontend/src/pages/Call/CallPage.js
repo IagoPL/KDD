@@ -1,5 +1,5 @@
 // src/pages/CallPage.js
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 const CallPage = ({ roomId }) => {
     const myVideo = useRef();
@@ -7,6 +7,9 @@ const CallPage = ({ roomId }) => {
     const [audioDevices, setAudioDevices] = useState([]);
     const [selectedVideoDevice, setSelectedVideoDevice] = useState('');
     const [selectedAudioDevice, setSelectedAudioDevice] = useState('');
+    const [stream, setStream] = useState(null);
+    const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+    const [isAudioEnabled, setIsAudioEnabled] = useState(true);
 
     // Función para obtener los dispositivos de video y audio
     const getDevices = async () => {
@@ -20,18 +23,20 @@ const CallPage = ({ roomId }) => {
         if (audioInputs.length > 0) setSelectedAudioDevice(audioInputs[0].deviceId);
     };
 
-    // Función para iniciar la transmisión de video y audio
-    const startStream = async () => {
+    // Función para iniciar la transmisión de video y audio respetando los estados de cámara y micrófono
+    const startStream = useCallback(async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: selectedVideoDevice ? { exact: selectedVideoDevice } : undefined },
-                audio: { deviceId: selectedAudioDevice ? { exact: selectedAudioDevice } : undefined }
+            const userStream = await navigator.mediaDevices.getUserMedia({
+                video: isVideoEnabled ? { deviceId: selectedVideoDevice ? { exact: selectedVideoDevice } : undefined } : false,
+                audio: isAudioEnabled ? { deviceId: selectedAudioDevice ? { exact: selectedAudioDevice } : undefined } : false
             });
-            myVideo.current.srcObject = stream;
+            setStream(userStream);
+            myVideo.current.srcObject = userStream;
+            myVideo.current.muted = true; // Desactiva el micrófono local para que no te escuches a ti mismo
         } catch (error) {
             console.error("Error al acceder a la cámara/micrófono:", error);
         }
-    };
+    }, [isVideoEnabled, isAudioEnabled, selectedVideoDevice, selectedAudioDevice]);
 
     useEffect(() => {
         getDevices();
@@ -41,7 +46,23 @@ const CallPage = ({ roomId }) => {
         if (selectedVideoDevice && selectedAudioDevice) {
             startStream();
         }
-    }, [selectedVideoDevice, selectedAudioDevice]);
+    }, [selectedVideoDevice, selectedAudioDevice, startStream]);
+
+    // Función para encender/apagar la cámara
+    const toggleVideo = () => {
+        if (stream) {
+            stream.getVideoTracks().forEach(track => track.enabled = !isVideoEnabled);
+            setIsVideoEnabled(!isVideoEnabled);
+        }
+    };
+
+    // Función para encender/apagar el micrófono
+    const toggleAudio = () => {
+        if (stream) {
+            stream.getAudioTracks().forEach(track => track.enabled = !isAudioEnabled);
+            setIsAudioEnabled(!isAudioEnabled);
+        }
+    };
 
     return (
         <div>
@@ -69,9 +90,18 @@ const CallPage = ({ roomId }) => {
                 </select>
             </div>
 
+            {/* Botones para encender/apagar la cámara y el micrófono */}
+            <div>
+                <button onClick={toggleVideo}>
+                    {isVideoEnabled ? 'Apagar Cámara' : 'Encender Cámara'}
+                </button>
+                <button onClick={toggleAudio}>
+                    {isAudioEnabled ? 'Apagar Micrófono' : 'Encender Micrófono'}
+                </button>
+            </div>
+
             {/* Elemento de video para la transmisión */}
             <video ref={myVideo} autoPlay playsInline />
-
         </div>
     );
 };
