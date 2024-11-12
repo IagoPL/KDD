@@ -17,7 +17,7 @@ function roomExists(roomId) {
 router.post('/create', (req, res) => {
     const roomId = generateRoomId();
     activeRooms[roomId] = true; // Guarda la sala como activa
-    res.status(201).json({ success: true, roomId }); // Respuesta JSON con `Content-Type: application/json`
+    res.status(201).json({ success: true, roomId });
 });
 
 // Ruta para unirse a una sala existente

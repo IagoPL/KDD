@@ -1,11 +1,11 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import MainPage from './pages/MainPage';
-import CreateCall from './pages/CreateCall';
-import JoinCall from './pages/JoinCall';
-import CallPage from './pages/CallPage';
+import LoginPage from './pages/Auth/LoginPage';
+import MainPage from './pages/Main/MainPage';
+import CreateCall from './pages/Call/CreateCall';
+import JoinCall from './pages/Call/JoinCall';
+import CallPage from './pages/Call/CallPage';
 
 const App = () => {
     return (

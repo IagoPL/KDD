@@ -9,10 +9,13 @@ const JoinCall = () => {
 
     const handleJoinCall = async () => {
         try {
-            await axios.post('/api/calls/join', { roomId });
-            navigate(`/call/${roomId}`);
+            const response = await axios.post('http://localhost:3000/api/calls/join', { roomId });
+            if (response.status === 200) {
+                navigate(`/call/${roomId}`);
+            }
         } catch (error) {
-            alert('Sala no encontrada');
+            console.error('Error al unirse a la llamada:', error);
+            alert('Sala no encontrada. Verifica el ID e intenta nuevamente.');
         }
     };
 
