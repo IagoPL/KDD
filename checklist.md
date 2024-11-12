@@ -38,11 +38,11 @@
 - [X]  Configurar **Socket.io** en el backend para la señalización de WebRTC.
 - [X]  Crear el **servidor TURN/STUN** (Coturn) para facilitar la conectividad entre usuarios.
 
-## **6. Funcionalidades Básicas de Llamadas** - **Pendiente ⏳**
+## **6. Funcionalidades Básicas de Llamadas** - **Listo ✅**
 
-- [ ]  Implementar la **creación y unión de llamadas** en el backend y frontend.
-- [ ]  Configurar **Mediasoup o Jitsi Videobridge** como SFU para manejar las llamadas grupales.
-- [ ]  Integrar la **interfaz de videollamadas** en el frontend.
+- [X]  Implementar la **creación y unión de llamadas** en el backend y frontend.
+- [X]  Configurar **Mediasoup o Jitsi Videobridge** como SFU para manejar las llamadas grupales.
+- [X]  Integrar la **interfaz de videollamadas** en el frontend.
 
 ## **7. Funcionalidades Avanzadas de Llamadas** - **Pendiente ⏳**
 

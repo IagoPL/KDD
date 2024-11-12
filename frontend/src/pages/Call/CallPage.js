@@ -10,6 +10,10 @@ const CallPage = ({ roomId }) => {
     const [stream, setStream] = useState(null);
     const [isVideoEnabled, setIsVideoEnabled] = useState(true);
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+    const [participants, setParticipants] = useState([
+        { id: 1, ref: useRef(), volume: 1 },
+        { id: 2, ref: useRef(), volume: 1 }
+    ]); // Simulación de participantes con referencias y volúmenes individuales
 
     // Función para obtener los dispositivos de video y audio
     const getDevices = async () => {
@@ -64,6 +68,19 @@ const CallPage = ({ roomId }) => {
         }
     };
 
+    // Controlador de volumen individual para cada participante
+    const handleVolumeChange = (id, newVolume) => {
+        setParticipants(prevParticipants =>
+            prevParticipants.map(participant =>
+                participant.id === id ? { ...participant, volume: newVolume } : participant
+            )
+        );
+        const participant = participants.find(participant => participant.id === id);
+        if (participant && participant.ref.current) {
+            participant.ref.current.volume = newVolume;
+        }
+    };
+
     return (
         <div>
             <h2>Sala de llamada: {roomId}</h2>
@@ -100,7 +117,26 @@ const CallPage = ({ roomId }) => {
                 </button>
             </div>
 
-            {/* Elemento de video para la transmisión */}
+            {/* Control de volumen individual para cada participante */}
+            <div>
+                <h3>Control de Volumen de Participantes:</h3>
+                {participants.map(participant => (
+                    <div key={participant.id}>
+                        <label>Participante {participant.id}:</label>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={participant.volume}
+                            onChange={(e) => handleVolumeChange(participant.id, parseFloat(e.target.value))}
+                        />
+                        <video ref={participant.ref} autoPlay playsInline volume={participant.volume} />
+                    </div>
+                ))}
+            </div>
+
+            {/* Elemento de video para la transmisión propia */}
             <video ref={myVideo} autoPlay playsInline />
         </div>
     );
