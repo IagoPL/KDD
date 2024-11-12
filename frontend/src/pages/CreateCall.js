@@ -8,9 +8,14 @@ const CreateCall = () => {
     const navigate = useNavigate();
 
     const handleCreateCall = async () => {
-        const response = await axios.post('/api/calls/create');
-        setRoomId(response.data.roomId);
-        navigate(`/call/${response.data.roomId}`);
+        try {
+            // Realiza una solicitud POST al backend para crear una nueva sala de llamada
+            const response = await axios.post('http://localhost:3000/api/calls/create');
+            setRoomId(response.data.roomId);
+            navigate(`/call/${response.data.roomId}`);
+        } catch (error) {
+            console.error('Error al crear la llamada:', error);
+        }
     };
 
     return (
