@@ -1,0 +1,9 @@
+
+# Lista de Pendientes y Mejoras para MyMeet
+
+## 1. Problemas con la Detención de Compartir Pantalla
+   - **Descripción**: Cuando se comparte la misma pantalla o ventana del navegador, la transmisión no se detiene correctamente al usar el botón de detener compartición del navegador.
+   - **Estado Actual**: En algunos casos funciona, pero es inconsistente.
+   - **Posible Solución**: Explorar técnicas adicionales de monitoreo o el uso de APIs específicas del navegador para detectar de manera confiable el estado de compartir pantalla.
+
+---

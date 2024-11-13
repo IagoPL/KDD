@@ -32,7 +32,7 @@
 * [X]  Implementar la **pantalla de inicio de sesión y registro**.
 * [X]  Crear la **UI de la página principal** para la gestión de grupos y configuración de llamadas.
 
-## **5. WebRTC y Comunicación en Tiempo Real** - **Listo ✅**
+## **5. WebRTC y Comunicación en Tiempo Real** - **Pendiente ⏳**
 
 - [ ]  Integrar **WebRTC** para la transmisión de audio y video.
 - [ ]  Configurar **Socket.io** en el backend para la señalización de WebRTC.
@@ -47,7 +47,7 @@
 ## **7. Funcionalidades Avanzadas de Llamadas** - **Pendiente ⏳**
 
 - [X]  Añadir la **capacidad de ajustar el volumen individual** de los participantes.
-- [ ]  Implementar la opción de **compartir pantalla** en las videollamadas.
+- [X]  Implementar la opción de **compartir pantalla** en las videollamadas.
 - [ ]  Añadir **filtros y fondos virtuales** con **OpenCV** o **TensorFlow.js** para la cámara.
 
 ## **8. Gestión de Grupos y Chats** - **Parcialmente Completo ⏳**
