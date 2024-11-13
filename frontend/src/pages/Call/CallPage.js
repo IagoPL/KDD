@@ -95,6 +95,22 @@ const CallPage = ({ roomId }) => {
     }
   };
 
+  const stopCameraStream = () => {
+    if (cameraStream) {
+      // Detener todas las pistas de la transmisión de la cámara
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+      myVideo.current.srcObject = null;
+
+      // Eliminar la pista de video de `peerConnection`
+      peerConnection.current.getSenders().forEach((sender) => {
+        if (sender.track && sender.track.kind === "video") {
+          sender.replaceTrack(null); // Reemplaza la pista de video con `null`
+        }
+      });
+    }
+  };
+
   const startScreenShare = async () => {
     if (screenStream) {
       stopScreenShare();
@@ -328,7 +344,16 @@ const CallPage = ({ roomId }) => {
       </div>
 
       <div>
-        <button onClick={() => setIsVideoEnabled(!isVideoEnabled)}>
+        <button
+          onClick={() => {
+            if (isVideoEnabled) {
+              stopCameraStream();
+            } else {
+              startCameraStream();
+            }
+            setIsVideoEnabled(!isVideoEnabled);
+          }}
+        >
           {isVideoEnabled ? "Apagar Cámara" : "Encender Cámara"}
         </button>
         <button onClick={() => setIsAudioEnabled(!isAudioEnabled)}>
