@@ -34,25 +34,25 @@
 
 ## **5. WebRTC y Comunicación en Tiempo Real** - **Listo ✅**
 
-- [X]  Integrar **WebRTC** para la transmisión de audio y video.
-- [X]  Configurar **Socket.io** en el backend para la señalización de WebRTC.
-- [X]  Crear el **servidor TURN/STUN** (Coturn) para facilitar la conectividad entre usuarios.
+- [ ]  Integrar **WebRTC** para la transmisión de audio y video.
+- [ ]  Configurar **Socket.io** en el backend para la señalización de WebRTC.
+- [ ]  Crear el **servidor TURN/STUN** (Coturn) para facilitar la conectividad entre usuarios.
 
 ## **6. Funcionalidades Básicas de Llamadas** - **Listo ✅**
 
 - [X]  Implementar la **creación y unión de llamadas** en el backend y frontend.
-- [X]  Configurar **Mediasoup o Jitsi Videobridge** como SFU para manejar las llamadas grupales.
-- [X]  Integrar la **interfaz de videollamadas** en el frontend.
+- [ ]  Configurar **Mediasoup o Jitsi Videobridge** como SFU para manejar las llamadas grupales.
+- [ ]  Integrar la **interfaz de videollamadas** en el frontend.
 
 ## **7. Funcionalidades Avanzadas de Llamadas** - **Pendiente ⏳**
 
-- [ ]  Añadir la **capacidad de ajustar el volumen individual** de los participantes.
+- [X]  Añadir la **capacidad de ajustar el volumen individual** de los participantes.
 - [ ]  Implementar la opción de **compartir pantalla** en las videollamadas.
 - [ ]  Añadir **filtros y fondos virtuales** con **OpenCV** o **TensorFlow.js** para la cámara.
 
 ## **8. Gestión de Grupos y Chats** - **Parcialmente Completo ⏳**
 
-- [ ]  Implementar la lógica de **creación y gestión de grupos** en el backend.
+- [X]  Implementar la lógica de **creación y gestión de grupos** en el backend.
 - [ ]  Añadir la interfaz de **gestión de grupos** en el frontend, permitiendo agregar y eliminar miembros.
 - [ ]  Integrar la **funcionalidad de chat en tiempo real** con **Socket.io**.
 - [ ]  Configurar el **almacenamiento del historial de chat** en la base de datos y la opción de exportar el historial.

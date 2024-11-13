@@ -10,10 +10,7 @@ const CallPage = ({ roomId }) => {
     const [stream, setStream] = useState(null);
     const [isVideoEnabled, setIsVideoEnabled] = useState(true);
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-    const [participants, setParticipants] = useState([
-        { id: 1, ref: useRef(), volume: 1 },
-        { id: 2, ref: useRef(), volume: 1 }
-    ]); // Simulación de participantes con referencias y volúmenes individuales
+    const [isScreenSharing, setIsScreenSharing] = useState(false); // Estado para compartir pantalla
 
     // Función para obtener los dispositivos de video y audio
     const getDevices = async () => {
@@ -68,16 +65,31 @@ const CallPage = ({ roomId }) => {
         }
     };
 
-    // Controlador de volumen individual para cada participante
-    const handleVolumeChange = (id, newVolume) => {
-        setParticipants(prevParticipants =>
-            prevParticipants.map(participant =>
-                participant.id === id ? { ...participant, volume: newVolume } : participant
-            )
-        );
-        const participant = participants.find(participant => participant.id === id);
-        if (participant && participant.ref.current) {
-            participant.ref.current.volume = newVolume;
+    // Función para compartir pantalla
+    const toggleScreenShare = async () => {
+        if (!isScreenSharing) {
+            try {
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true
+                });
+                setIsScreenSharing(true);
+                const videoTrack = screenStream.getVideoTracks()[0];
+
+                // Muestra el stream de pantalla en el elemento de video
+                myVideo.current.srcObject = screenStream;
+
+                // Al terminar de compartir pantalla, regresa al stream de cámara
+                videoTrack.onended = () => {
+                    setIsScreenSharing(false);
+                    startStream();
+                };
+            } catch (error) {
+                console.error("Error al compartir pantalla:", error);
+            }
+        } else {
+            // Detener la pantalla compartida y regresar a la cámara
+            setIsScreenSharing(false);
+            startStream();
         }
     };
 
@@ -107,7 +119,7 @@ const CallPage = ({ roomId }) => {
                 </select>
             </div>
 
-            {/* Botones para encender/apagar la cámara y el micrófono */}
+            {/* Botones para encender/apagar la cámara, el micrófono, y compartir pantalla */}
             <div>
                 <button onClick={toggleVideo}>
                     {isVideoEnabled ? 'Apagar Cámara' : 'Encender Cámara'}
@@ -115,25 +127,9 @@ const CallPage = ({ roomId }) => {
                 <button onClick={toggleAudio}>
                     {isAudioEnabled ? 'Apagar Micrófono' : 'Encender Micrófono'}
                 </button>
-            </div>
-
-            {/* Control de volumen individual para cada participante */}
-            <div>
-                <h3>Control de Volumen de Participantes:</h3>
-                {participants.map(participant => (
-                    <div key={participant.id}>
-                        <label>Participante {participant.id}:</label>
-                        <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            value={participant.volume}
-                            onChange={(e) => handleVolumeChange(participant.id, parseFloat(e.target.value))}
-                        />
-                        <video ref={participant.ref} autoPlay playsInline volume={participant.volume} />
-                    </div>
-                ))}
+                <button onClick={toggleScreenShare}>
+                    {isScreenSharing ? 'Dejar de Compartir Pantalla' : 'Compartir Pantalla'}
+                </button>
             </div>
 
             {/* Elemento de video para la transmisión propia */}
