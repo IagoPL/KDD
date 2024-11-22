@@ -5,6 +5,7 @@ const CallPage = ({ roomId }) => {
   const myVideo = useRef();
   const remoteVideo = useRef();
   const screenVideo = useRef();
+  const screenVideoRef = useRef(null);
   const [videoDevices, setVideoDevices] = useState([]);
   const [audioDevices, setAudioDevices] = useState([]);
   const [selectedVideoDevice, setSelectedVideoDevice] = useState("");
@@ -12,7 +13,6 @@ const CallPage = ({ roomId }) => {
   const [cameraStream, setCameraStream] = useState(null);
   const [screenStream, setScreenStream] = useState(null);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [resolutions, setResolutions] = useState([]);
   const [selectedResolution, setSelectedResolution] = useState(null);
   const fpsOptions = [15, 30, 60];
@@ -97,15 +97,13 @@ const CallPage = ({ roomId }) => {
 
   const stopCameraStream = () => {
     if (cameraStream) {
-      // Detener todas las pistas de la transmisión de la cámara
       cameraStream.getTracks().forEach((track) => track.stop());
       setCameraStream(null);
       myVideo.current.srcObject = null;
 
-      // Eliminar la pista de video de `peerConnection`
       peerConnection.current.getSenders().forEach((sender) => {
         if (sender.track && sender.track.kind === "video") {
-          sender.replaceTrack(null); // Reemplaza la pista de video con `null`
+          sender.replaceTrack(null);
         }
       });
     }
@@ -129,10 +127,8 @@ const CallPage = ({ roomId }) => {
       setScreenStream(displayStream);
       screenVideo.current.srcObject = displayStream;
 
-      // Inicia monitoreo del estado de la pantalla compartida
       monitorScreenShare(displayStream);
 
-      // Agrega la transmisión de pantalla al peerConnection
       displayStream.getTracks().forEach((track) => {
         peerConnection.current.addTrack(track, displayStream);
       });
@@ -142,7 +138,6 @@ const CallPage = ({ roomId }) => {
   };
 
   const monitorScreenShare = (displayStream) => {
-    // Limpia cualquier monitoreo previo
     if (screenShareCheckInterval) {
       clearInterval(screenShareCheckInterval);
     }
@@ -150,7 +145,6 @@ const CallPage = ({ roomId }) => {
       cancelAnimationFrame(animationFrameRequest);
     }
 
-    // Verificación en intervalos regulares
     screenShareCheckInterval = setInterval(() => {
       if (!displayStream.active) {
         stopScreenShare();
@@ -159,7 +153,6 @@ const CallPage = ({ roomId }) => {
       }
     }, 500);
 
-    // Verificación adicional con requestAnimationFrame
     const checkScreenStream = () => {
       if (!displayStream.active) {
         stopScreenShare();
@@ -171,7 +164,6 @@ const CallPage = ({ roomId }) => {
     };
     checkScreenStream();
 
-    // Evento onended en caso de que funcione
     displayStream.getVideoTracks()[0].onended = () => {
       stopScreenShare();
       clearInterval(screenShareCheckInterval);
@@ -181,19 +173,16 @@ const CallPage = ({ roomId }) => {
 
   const stopScreenShare = () => {
     if (screenStream) {
-      // Detiene todas las pistas en screenStream
       screenStream.getTracks().forEach((track) => track.stop());
       setScreenStream(null);
       screenVideo.current.srcObject = null;
 
-      // Elimina la pista de video compartida en el peerConnection
       peerConnection.current.getSenders().forEach((sender) => {
         if (sender.track && sender.track.kind === "video") {
-          sender.replaceTrack(null); // Reemplaza la pista compartida con `null`
+          sender.replaceTrack(null);
         }
       });
 
-      // Limpia el intervalo de monitoreo
       if (screenShareCheckInterval) {
         clearInterval(screenShareCheckInterval);
       }
@@ -215,7 +204,6 @@ const CallPage = ({ roomId }) => {
     socket.emit("join-room", roomId);
 
     socket.on("user-connected", (userId) => {
-      console.log("Usuario conectado:", userId);
       callUser(userId);
     });
 
@@ -276,13 +264,91 @@ const CallPage = ({ roomId }) => {
     };
   }, [roomId]);
 
+  const MicTest = () => {
+    const [volume, setVolume] = useState(0);
+    const [isMicActive, setIsMicActive] = useState(true);
+    const audioContextRef = useRef(null);
+    const analyserRef = useRef(null);
+    const mediaStreamRef = useRef(null);
+  
+    useEffect(() => {
+      const initializeMicTest = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          mediaStreamRef.current = stream;
+  
+          const audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          audioContextRef.current = audioContext;
+  
+          const analyser = audioContext.createAnalyser();
+          analyser.fftSize = 256;
+          analyserRef.current = analyser;
+  
+          const source = audioContext.createMediaStreamSource(stream);
+          source.connect(analyser);
+  
+          const updateVolume = () => {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+  
+            const averageVolume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            setVolume(averageVolume);
+  
+            if (isMicActive) {
+              requestAnimationFrame(updateVolume);
+            }
+          };
+  
+          updateVolume();
+        } catch (error) {
+          console.error("Error al acceder al micrófono:", error);
+          setIsMicActive(false);
+        }
+      };
+  
+      initializeMicTest();
+  
+      return () => {
+        if (audioContextRef.current) audioContextRef.current.close();
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        }
+      };
+    }, [isMicActive]);
+  
+    const toggleMic = () => {
+      if (mediaStreamRef.current) {
+        const micTrack = mediaStreamRef.current.getAudioTracks()[0];
+        micTrack.enabled = !micTrack.enabled;
+        setIsMicActive(micTrack.enabled); // Actualizamos el estado inmediatamente
+      }
+    };
+  
+    return (
+      <div>
+        <h3>Prueba de Micrófono</h3>
+        <button onClick={toggleMic}>
+          {isMicActive ? "Apagar Micrófono" : "Encender Micrófono"}
+        </button>
+        <div style={{ marginTop: "10px" }}>
+          <label>Volumen:</label>
+          <progress value={volume} max="255" style={{ width: "100%" }} />
+        </div>
+        {!isMicActive && <p>El micrófono está apagado</p>}
+      </div>
+    );
+  };
+
   return (
     <div>
       <h2>Sala de llamada: {roomId}</h2>
       <video ref={myVideo} autoPlay playsInline muted />
       <video ref={remoteVideo} autoPlay playsInline />
       <video ref={screenVideo} autoPlay playsInline />
-
+      <MicTest />
       <div>
         <label>Cámara:</label>
         <select
@@ -355,9 +421,6 @@ const CallPage = ({ roomId }) => {
           }}
         >
           {isVideoEnabled ? "Apagar Cámara" : "Encender Cámara"}
-        </button>
-        <button onClick={() => setIsAudioEnabled(!isAudioEnabled)}>
-          {isAudioEnabled ? "Apagar Micrófono" : "Encender Micrófono"}
         </button>
         <button onClick={startScreenShare}>Compartir Pantalla</button>
         <button onClick={stopScreenShare} disabled={!screenStream}>

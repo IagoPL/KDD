@@ -5,7 +5,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import MainPage from './pages/Main/MainPage';
 import CreateCall from './pages/Call/CreateCall';
 import JoinCall from './pages/Call/JoinCall';
-import CallPage from './pages/Call/CallPage';
+import CallPage from './pages/Call/CallPages';
 
 const App = () => {
     return (
