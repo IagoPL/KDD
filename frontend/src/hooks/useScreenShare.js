@@ -75,6 +75,22 @@ const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket,
     }
   };
 
+  const updateScreenShareConstraints = async (newResolution, newFPS) => {
+    if (screenStream) {
+      const videoTrack = screenStream.getVideoTracks()[0];
+      try {
+        await videoTrack.applyConstraints({
+          width: newResolution.width,
+          height: newResolution.height,
+          frameRate: newFPS,
+        });
+        console.log('Restricciones de pantalla compartida actualizadas.');
+      } catch (error) {
+        console.error('Error al actualizar restricciones de pantalla compartida:', error);
+      }
+    }
+  };
+
   const monitorScreenShare = (displayStream) => {
     if (screenShareCheckInterval.current) {
       clearInterval(screenShareCheckInterval.current);
@@ -109,7 +125,7 @@ const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket,
     };
   };
 
-  return { screenStream, startScreenShare, stopScreenShare };
+  return { screenStream, startScreenShare, stopScreenShare, updateScreenShareConstraints };
 };
 
 export default useScreenShare;

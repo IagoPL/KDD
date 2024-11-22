@@ -39,7 +39,7 @@ const CallPage = ({ roomId }) => {
     myVideoRef
   );
 
-  const { screenStream, startScreenShare, stopScreenShare } = useScreenShare(
+  const { screenStream, startScreenShare, stopScreenShare, updateScreenShareConstraints } = useScreenShare(
     peerConnection,
     selectedResolution,
     selectedFPS,
@@ -65,6 +65,12 @@ const CallPage = ({ roomId }) => {
     }
     setIsScreenSharing(!isScreenSharing);
   };
+
+  useEffect(() => {
+    if (isScreenSharing) {
+      updateScreenShareConstraints(selectedResolution, selectedFPS);
+    }
+  }, [selectedResolution, selectedFPS]);
 
   useEffect(() => {
     if (screenStream && screenVideoRef.current) {
