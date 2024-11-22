@@ -24,7 +24,7 @@ const CallPage = ({ roomId }) => {
 
   const myVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const screenVideoRef = useRef(null);
+  const screenVideoRef = useRef(null); // Nueva referencia para el video de pantalla compartida
 
   // Inicializar socket primero
   const socket = useSocket(roomId);
@@ -44,7 +44,8 @@ const CallPage = ({ roomId }) => {
     selectedResolution,
     selectedFPS,
     socket,
-    myVideoRef
+    myVideoRef,
+    screenVideoRef
   );
 
   const toggleCamera = () => {
@@ -71,6 +72,12 @@ const CallPage = ({ roomId }) => {
       updateScreenShareConstraints(selectedResolution, selectedFPS);
     }
   }, [selectedResolution, selectedFPS]);
+
+  useEffect(() => {
+    if (!isScreenSharing && screenVideoRef.current) {
+      screenVideoRef.current.srcObject = null;
+    }
+  }, [isScreenSharing]);
 
   useEffect(() => {
     if (screenStream && screenVideoRef.current) {

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { MESSAGES, SCREEN_SHARE_CHECK_INTERVAL } from '../utils/constants';
 
-const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket, myVideoRef) => {
+const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket, myVideoRef, screenVideoRef) => {
   const [screenStream, setScreenStream] = useState(null);
   const screenShareCheckInterval = useRef(null);
   const animationFrameRequest = useRef(null);
@@ -51,6 +51,11 @@ const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket,
     if (screenStream) {
       screenStream.getTracks().forEach((track) => track.stop());
       setScreenStream(null);
+
+      // Limpia el contenido del video de pantalla compartida
+      if (screenVideoRef && screenVideoRef.current) {
+        screenVideoRef.current.srcObject = null;
+      }
 
       // Restaurar la pista de la cámara
       if (myVideoRef.current && myVideoRef.current.srcObject) {
