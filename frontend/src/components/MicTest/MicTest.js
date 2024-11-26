@@ -3,19 +3,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MESSAGES } from '../../utils/constants';
 
-const MicTest = () => {
+const MicTest = ({ stream, setStream, selectedAudioDevice }) => {
   const [volume, setVolume] = useState(0);
-  const [isMicActive, setIsMicActive] = useState(true);
+  const [isMicActive, setIsMicActive] = useState(true); // Micrófono encendido inicialmente
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
-  const mediaStreamRef = useRef(null);
+  const mediaStreamSourceRef = useRef(null);
+
+  // Función para iniciar el MediaStream del micrófono
+  const startAudioStream = async () => {
+    try {
+      const constraints = {
+        audio: selectedAudioDevice ? { deviceId: { exact: selectedAudioDevice } } : true,
+      };
+      const audioStream = await navigator.mediaDevices.getUserMedia(constraints);
+      setStream(audioStream);
+    } catch (error) {
+      console.error('Error al obtener el MediaStream de audio:', error);
+    }
+  };
 
   useEffect(() => {
-    const initializeMicTest = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaStreamRef.current = stream;
-
+    if (stream && stream.getAudioTracks().length > 0) {
+      if (!audioContextRef.current) {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         audioContextRef.current = audioContext;
 
@@ -24,6 +34,7 @@ const MicTest = () => {
         analyserRef.current = analyser;
 
         const source = audioContext.createMediaStreamSource(stream);
+        mediaStreamSourceRef.current = source;
         source.connect(analyser);
 
         const updateVolume = () => {
@@ -33,35 +44,37 @@ const MicTest = () => {
           const averageVolume = dataArray.reduce((a, b) => a + b) / dataArray.length;
           setVolume(averageVolume);
 
-          if (isMicActive) {
-            requestAnimationFrame(updateVolume);
-          }
+          requestAnimationFrame(updateVolume);
         };
 
         updateVolume();
-      } catch (error) {
-        console.error(MESSAGES.micAccessError, error);
-        setIsMicActive(false);
       }
-    };
 
-    initializeMicTest();
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = isMicActive;
+      });
+    }
 
     return () => {
-      if (audioContextRef.current) audioContextRef.current.close();
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
       }
     };
-  }, [isMicActive]);
+  }, [stream]);
 
   const toggleMic = () => {
-    if (mediaStreamRef.current) {
-      const micTrack = mediaStreamRef.current.getAudioTracks()[0];
-      micTrack.enabled = !micTrack.enabled;
-      setIsMicActive(micTrack.enabled);
+    if (stream && stream.getAudioTracks().length > 0) {
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = !track.enabled;
+        setIsMicActive(track.enabled);
+      });
     }
   };
+
+  useEffect(() => {
+    startAudioStream();
+  }, [selectedAudioDevice]);
 
   return (
     <div>
