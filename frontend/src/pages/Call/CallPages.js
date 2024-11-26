@@ -1,138 +1,95 @@
-// src/pages/Call/CallPage.js
-
-import React, { useState, useRef, useEffect } from 'react';
-import MicTest from '../../components/MicTest/MicTest';
-import DeviceSelector from '../../components/DeviceSelector/DeviceSelector';
+import React, { useRef, useState, useEffect } from 'react';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
 import Controls from '../../components/Controls/Controls';
+import DeviceSelector from '../../components/DeviceSelector/DeviceSelector';
+import MicTest from '../../components/MicTest/MicTest';
 import ScreenShareControls from '../../components/ScreenShareControls/ScreenShareControls';
+import useCameraStream from '../../hooks/useCameraStream';
 import useMediaDevices from '../../hooks/useMediaDevices';
 import usePeerConnection from '../../hooks/usePeerConnection';
-import useSocket from '../../hooks/useSocket';
 import useScreenShare from '../../hooks/useScreenShare';
-import { fpsOptions, resolutions } from '../../utils/constants';
+import useSocket from '../../hooks/useSocket';
+import { resolutions, fpsOptions } from '../../utils/constants';
 
 const CallPage = ({ roomId }) => {
-  // Estados y referencias para manejar los dispositivos y el streaming
+  // Referencias de video
+  const myVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const screenVideoRef = useRef(null);
+
+  // Socket y conexión Peer-to-Peer
+  const socket = useSocket(roomId);
+  const peerConnection = usePeerConnection(socket, remoteVideoRef);
+
+  // Manejo de dispositivos
   const { videoDevices, audioDevices } = useMediaDevices();
   const [selectedVideoDevice, setSelectedVideoDevice] = useState('');
   const [selectedAudioDevice, setSelectedAudioDevice] = useState('');
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
+
+  // Manejo de cámara
+  const {
+    cameraStream,
+    isVideoEnabled,
+    toggleCamera,
+  } = useCameraStream(selectedVideoDevice, selectedAudioDevice, myVideoRef);
+
+  // Manejo de pantalla compartida
   const [selectedResolution, setSelectedResolution] = useState(resolutions[0]);
   const [selectedFPS, setSelectedFPS] = useState(fpsOptions[1]);
-  const [stream, setStream] = useState(null);
 
-  const myVideoRef = useRef(null);
-  const remoteVideoRef = useRef(null);
-  const screenVideoRef = useRef(null); // Nueva referencia para el video de pantalla compartida
-
-  // Inicialización del socket
-  const socket = useSocket(roomId);
-
-  // Inicialización de la conexión peer-to-peer
-  const peerConnection = usePeerConnection(socket, remoteVideoRef);
-
-  // Funciones para manejar el compartir pantalla
   const {
     screenStream,
     startScreenShare,
     stopScreenShare,
     updateScreenShareConstraints,
-  } = useScreenShare(peerConnection, selectedResolution, selectedFPS, socket, myVideoRef, screenVideoRef);
+  } = useScreenShare(peerConnection, screenVideoRef);
 
-  // Efecto para iniciar el MediaStream de video y audio
+  // Actualizar restricciones de pantalla compartida
   useEffect(() => {
-    const startMediaStream = async () => {
-      try {
-        const constraints = {
-          video: selectedVideoDevice ? { deviceId: { exact: selectedVideoDevice } } : true,
-          audio: selectedAudioDevice ? { deviceId: { exact: selectedAudioDevice } } : true,
-        };
-        const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-        setStream(mediaStream);
-
-        if (myVideoRef.current) {
-          myVideoRef.current.srcObject = mediaStream;
-        }
-      } catch (error) {
-        console.error('Error al obtener el MediaStream:', error);
-      }
-    };
-
-    if (isVideoEnabled || selectedAudioDevice) {
-      startMediaStream();
-    }
-  }, [selectedVideoDevice, selectedAudioDevice, isVideoEnabled]);
-
-  // Alternar el estado de la cámara
-  const toggleCamera = () => {
-    if (isVideoEnabled && stream) {
-      stream.getVideoTracks().forEach((track) => track.stop());
-      setStream(null);
-    } else {
-      setIsVideoEnabled(true);
-    }
-    setIsVideoEnabled(!isVideoEnabled);
-  };
-
-  // Alternar el estado de compartir pantalla
-  const toggleScreenShare = () => {
-    if (isScreenSharing) {
-      stopScreenShare();
-    } else {
-      startScreenShare();
-    }
-    setIsScreenSharing(!isScreenSharing);
-  };
-
-  // Efecto para actualizar las restricciones de compartir pantalla cuando cambian la resolución o el FPS
-  useEffect(() => {
-    if (isScreenSharing) {
-      updateScreenShareConstraints(selectedResolution, selectedFPS);
-    }
+    updateScreenShareConstraints(selectedResolution, selectedFPS);
   }, [selectedResolution, selectedFPS]);
 
-  // Efecto para limpiar el video de pantalla compartida cuando se detiene
+  // Depuración: Asignar el stream globalmente
   useEffect(() => {
-    if (!isScreenSharing && screenVideoRef.current) {
-      screenVideoRef.current.srcObject = null;
-    }
-  }, [isScreenSharing]);
-
-  // Efecto para asignar el stream de pantalla compartida al elemento de video
-  useEffect(() => {
-    if (screenStream && screenVideoRef.current) {
+    if (screenVideoRef.current && screenStream) {
       screenVideoRef.current.srcObject = screenStream;
-      console.log('Screen stream asignado al elemento de video para pantalla compartida.');
+      screenVideoRef.current.play(); // Forzar reproducción
     }
   }, [screenStream]);
 
+  // Iniciar pantalla compartida con las restricciones actuales
+  const startSharing = () => {
+    startScreenShare({
+      width: selectedResolution.width,
+      height: selectedResolution.height,
+      frameRate: selectedFPS,
+    });
+  };
+
   return (
     <div>
-      <h2>Sala de llamada: {roomId}</h2>
-      
-      {/* Video del usuario y el video remoto */}
+      <h2>Sala de Llamada: {roomId}</h2>
+
+      {/* Video local y remoto */}
       <VideoPlayer
         myVideoRef={myVideoRef}
         remoteVideoRef={remoteVideoRef}
-        stream={stream}
-        setStream={setStream}
-        selectedVideoDevice={selectedVideoDevice}
         isVideoEnabled={isVideoEnabled}
-        setIsVideoEnabled={setIsVideoEnabled}
+        toggleCamera={toggleCamera}
       />
-      
-      {/* Video de la pantalla compartida */}
+
+      {/* Pantalla compartida */}
       <div>
         <h3>Pantalla Compartida</h3>
-        <video ref={screenVideoRef} autoPlay playsInline style={{ width: '45%' }} />
+        <video
+          ref={screenVideoRef}
+          autoPlay
+          playsInline
+          style={{ width: '45%' }}
+        />
       </div>
 
-      {/* Componente para manejar el micrófono */}
-      <MicTest stream={stream} setStream={setStream} selectedAudioDevice={selectedAudioDevice} />
-
-      {/* Selector de dispositivos de audio y video */}
+      {/* Selector de dispositivos */}
       <DeviceSelector
         videoDevices={videoDevices}
         audioDevices={audioDevices}
@@ -142,7 +99,13 @@ const CallPage = ({ roomId }) => {
         setSelectedAudioDevice={setSelectedAudioDevice}
       />
 
-      {/* Controles para compartir pantalla */}
+      {/* Prueba de micrófono */}
+      <MicTest
+        stream={cameraStream}
+        selectedAudioDevice={selectedAudioDevice}
+      />
+
+      {/* Controles de pantalla compartida */}
       <ScreenShareControls
         resolutions={resolutions}
         selectedResolution={selectedResolution}
@@ -152,12 +115,12 @@ const CallPage = ({ roomId }) => {
         setSelectedFPS={setSelectedFPS}
       />
 
-      {/* Controles generales para la llamada */}
+      {/* Controles generales */}
       <Controls
         isVideoEnabled={isVideoEnabled}
         toggleCamera={toggleCamera}
-        startScreenShare={toggleScreenShare}
-        stopScreenShare={toggleScreenShare}
+        startScreenShare={startSharing}
+        stopScreenShare={stopScreenShare}
         screenStream={screenStream}
       />
     </div>

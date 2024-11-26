@@ -1,5 +1,3 @@
-// src/hooks/useSocket.js
-
 import { useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { SOCKET_SERVER_URL } from '../utils/constants';
@@ -7,21 +5,32 @@ import { SOCKET_SERVER_URL } from '../utils/constants';
 const useSocket = (roomId) => {
   const socketRef = useRef(null);
 
-  if (!socketRef.current) {
-    socketRef.current = io(SOCKET_SERVER_URL);
-  }
-
-  const socket = socketRef.current;
-
   useEffect(() => {
-    socket.emit('join-room', { roomId, from: socket.id });
+    socketRef.current = io(SOCKET_SERVER_URL);
+    const socket = socketRef.current;
+
+    socket.emit('join-room', roomId);
 
     return () => {
       socket.disconnect();
     };
-  }, [socket, roomId]);
+  }, [roomId]);
 
-  return socket;
+  const emit = (event, data) => {
+    if (socketRef.current?.connected) {
+      socketRef.current.emit(event, data);
+    }
+  };
+
+  const on = (event, callback) => {
+    socketRef.current?.on(event, callback);
+  };
+
+  const off = (event) => {
+    socketRef.current?.off(event);
+  };
+
+  return { emit, on, off };
 };
 
 export default useSocket;

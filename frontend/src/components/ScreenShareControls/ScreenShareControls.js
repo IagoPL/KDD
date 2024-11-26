@@ -1,5 +1,3 @@
-// src/components/ScreenShareControls/ScreenShareControls.js
-
 import React from 'react';
 
 const ScreenShareControls = ({
@@ -11,12 +9,15 @@ const ScreenShareControls = ({
   setSelectedFPS,
 }) => (
   <div>
+    {/* Selector de resolución */}
     <div>
       <label>Resolución:</label>
       <select
-        value={selectedResolution.label}
+        value={selectedResolution?.label || ''}
         onChange={(e) =>
-          setSelectedResolution(resolutions.find((r) => r.label === e.target.value))
+          setSelectedResolution(
+            resolutions.find((res) => res.label === e.target.value)
+          )
         }
       >
         {resolutions.map((res) => (
@@ -26,10 +27,12 @@ const ScreenShareControls = ({
         ))}
       </select>
     </div>
+
+    {/* Selector de FPS */}
     <div>
       <label>FPS:</label>
       <select
-        value={selectedFPS}
+        value={selectedFPS || ''}
         onChange={(e) => setSelectedFPS(Number(e.target.value))}
       >
         {fpsOptions.map((fps) => (

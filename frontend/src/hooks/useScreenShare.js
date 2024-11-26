@@ -1,33 +1,28 @@
-// src/hooks/useScreenShare.js
+import { useState } from 'react';
 
-import { useState, useRef } from 'react';
-import { MESSAGES, SCREEN_SHARE_CHECK_INTERVAL } from '../utils/constants';
-
-const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket, myVideoRef, screenVideoRef) => {
+const useScreenShare = (peerConnection, screenVideoRef) => {
   const [screenStream, setScreenStream] = useState(null);
-  const screenShareCheckInterval = useRef(null);
-  const animationFrameRequest = useRef(null);
 
-  const startScreenShare = async () => {
-    if (screenStream) {
-      await stopScreenShare();
-    }
-
+  const startScreenShare = async ({ width, height, frameRate }) => {
     try {
-      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+      const constraints = {
         video: {
           cursor: 'always',
-          width: selectedResolution.width,
-          height: selectedResolution.height,
-          frameRate: selectedFPS,
+          width: width || 1280,
+          height: height || 720,
+          frameRate: frameRate || 30,
         },
-      });
+      };
+
+      const displayStream = await navigator.mediaDevices.getDisplayMedia(constraints);
+      console.log('Stream de pantalla compartida obtenido:', displayStream);
 
       setScreenStream(displayStream);
 
+      // Reemplazar pista de video en el peerConnection
       const videoTrack = displayStream.getVideoTracks()[0];
       const sender = peerConnection.getSenders().find(
-        (s) => s.track && s.track.kind === 'video'
+        (s) => s.track?.kind === 'video'
       );
 
       if (sender) {
@@ -36,47 +31,23 @@ const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket,
         peerConnection.addTrack(videoTrack, displayStream);
       }
 
-      // Renegociar la conexión
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      socket.emit('offer', { offer: peerConnection.localDescription, from: socket.id });
-
-      monitorScreenShare(displayStream);
+      // Mostrar la pantalla compartida en el elemento video
+      if (screenVideoRef?.current) {
+        screenVideoRef.current.srcObject = displayStream;
+        screenVideoRef.current.play(); // Forzar reproducción
+      }
     } catch (error) {
-      console.error(MESSAGES.screenShareError, error);
+      console.error('Error al iniciar pantalla compartida:', error);
     }
   };
 
-  const stopScreenShare = async () => {
+  const stopScreenShare = () => {
     if (screenStream) {
       screenStream.getTracks().forEach((track) => track.stop());
       setScreenStream(null);
-
-      // Limpia el contenido del video de pantalla compartida
-      if (screenVideoRef && screenVideoRef.current) {
-        screenVideoRef.current.srcObject = null;
-      }
-
-      // Restaurar la pista de la cámara
-      if (myVideoRef.current && myVideoRef.current.srcObject) {
-        const cameraStream = myVideoRef.current.srcObject;
-        const cameraTrack = cameraStream.getVideoTracks()[0];
-        const sender = peerConnection.getSenders().find(
-          (s) => s.track && s.track.kind === 'video'
-        );
-        if (sender) {
-          await sender.replaceTrack(cameraTrack);
-        }
-      }
-
-      // Renegociar la conexión
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      socket.emit('offer', { offer: peerConnection.localDescription, from: socket.id });
-
-      if (screenShareCheckInterval.current) {
-        clearInterval(screenShareCheckInterval.current);
-      }
+    }
+    if (screenVideoRef?.current) {
+      screenVideoRef.current.srcObject = null;
     }
   };
 
@@ -91,43 +62,9 @@ const useScreenShare = (peerConnection, selectedResolution, selectedFPS, socket,
         });
         console.log('Restricciones de pantalla compartida actualizadas.');
       } catch (error) {
-        console.error('Error al actualizar restricciones de pantalla compartida:', error);
+        console.error('Error al actualizar restricciones:', error);
       }
     }
-  };
-
-  const monitorScreenShare = (displayStream) => {
-    if (screenShareCheckInterval.current) {
-      clearInterval(screenShareCheckInterval.current);
-    }
-    if (animationFrameRequest.current) {
-      cancelAnimationFrame(animationFrameRequest.current);
-    }
-
-    screenShareCheckInterval.current = setInterval(() => {
-      if (!displayStream.active) {
-        stopScreenShare();
-        clearInterval(screenShareCheckInterval.current);
-        cancelAnimationFrame(animationFrameRequest.current);
-      }
-    }, SCREEN_SHARE_CHECK_INTERVAL);
-
-    const checkScreenStream = () => {
-      if (!displayStream.active) {
-        stopScreenShare();
-        clearInterval(screenShareCheckInterval.current);
-        cancelAnimationFrame(animationFrameRequest.current);
-      } else {
-        animationFrameRequest.current = requestAnimationFrame(checkScreenStream);
-      }
-    };
-    checkScreenStream();
-
-    displayStream.getVideoTracks()[0].onended = () => {
-      stopScreenShare();
-      clearInterval(screenShareCheckInterval.current);
-      cancelAnimationFrame(animationFrameRequest.current);
-    };
   };
 
   return { screenStream, startScreenShare, stopScreenShare, updateScreenShareConstraints };

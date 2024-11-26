@@ -1,80 +1,9 @@
-// src/components/MicTest/MicTest.js
-
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
+import useMicTest from '../../hooks/useMicTest';
 import { MESSAGES } from '../../utils/constants';
 
-const MicTest = ({ stream, setStream, selectedAudioDevice }) => {
-  const [volume, setVolume] = useState(0);
-  const [isMicActive, setIsMicActive] = useState(true); // Micrófono encendido inicialmente
-  const audioContextRef = useRef(null);
-  const analyserRef = useRef(null);
-  const mediaStreamSourceRef = useRef(null);
-
-  // Función para iniciar el MediaStream del micrófono
-  const startAudioStream = async () => {
-    try {
-      const constraints = {
-        audio: selectedAudioDevice ? { deviceId: { exact: selectedAudioDevice } } : true,
-      };
-      const audioStream = await navigator.mediaDevices.getUserMedia(constraints);
-      setStream(audioStream);
-    } catch (error) {
-      console.error('Error al obtener el MediaStream de audio:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (stream && stream.getAudioTracks().length > 0) {
-      if (!audioContextRef.current) {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        audioContextRef.current = audioContext;
-
-        const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
-        analyserRef.current = analyser;
-
-        const source = audioContext.createMediaStreamSource(stream);
-        mediaStreamSourceRef.current = source;
-        source.connect(analyser);
-
-        const updateVolume = () => {
-          const dataArray = new Uint8Array(analyser.frequencyBinCount);
-          analyser.getByteFrequencyData(dataArray);
-
-          const averageVolume = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          setVolume(averageVolume);
-
-          requestAnimationFrame(updateVolume);
-        };
-
-        updateVolume();
-      }
-
-      stream.getAudioTracks().forEach((track) => {
-        track.enabled = isMicActive;
-      });
-    }
-
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-    };
-  }, [stream]);
-
-  const toggleMic = () => {
-    if (stream && stream.getAudioTracks().length > 0) {
-      stream.getAudioTracks().forEach((track) => {
-        track.enabled = !track.enabled;
-        setIsMicActive(track.enabled);
-      });
-    }
-  };
-
-  useEffect(() => {
-    startAudioStream();
-  }, [selectedAudioDevice]);
+const MicTest = ({ stream, selectedAudioDevice }) => {
+  const { volume, isMicActive, toggleMic } = useMicTest(stream, selectedAudioDevice);
 
   return (
     <div>

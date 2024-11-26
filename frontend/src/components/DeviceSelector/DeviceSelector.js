@@ -1,5 +1,3 @@
-// src/components/DeviceSelector/DeviceSelector.js
-
 import React from 'react';
 
 const DeviceSelector = ({
@@ -11,6 +9,7 @@ const DeviceSelector = ({
   setSelectedAudioDevice,
 }) => (
   <div>
+    {/* Selector de cámara */}
     <div>
       <label>Cámara:</label>
       <select
@@ -25,6 +24,7 @@ const DeviceSelector = ({
       </select>
     </div>
 
+    {/* Selector de micrófono */}
     <div>
       <label>Micrófono:</label>
       <select
