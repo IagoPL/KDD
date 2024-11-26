@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import VideoPlayer from '../../components/VideoPlayer/VideoPlayer';
 import Controls from '../../components/Controls/Controls';
 import DeviceSelector from '../../components/DeviceSelector/DeviceSelector';
@@ -7,8 +7,8 @@ import ScreenShareControls from '../../components/ScreenShareControls/ScreenShar
 import useCameraStream from '../../hooks/useCameraStream';
 import useMediaDevices from '../../hooks/useMediaDevices';
 import usePeerConnection from '../../hooks/usePeerConnection';
-import useScreenShare from '../../hooks/useScreenShare';
 import useSocket from '../../hooks/useSocket';
+import useScreenShareManager from '../../hooks/useScreenShareManager';
 import { resolutions, fpsOptions } from '../../utils/constants';
 
 const CallPage = ({ roomId }) => {
@@ -39,32 +39,14 @@ const CallPage = ({ roomId }) => {
 
   const {
     screenStream,
-    startScreenShare,
+    startSharing,
     stopScreenShare,
-    updateScreenShareConstraints,
-  } = useScreenShare(peerConnection, screenVideoRef);
-
-  // Actualizar restricciones de pantalla compartida
-  useEffect(() => {
-    updateScreenShareConstraints(selectedResolution, selectedFPS);
-  }, [selectedResolution, selectedFPS]);
-
-  // Depuración: Asignar el stream globalmente
-  useEffect(() => {
-    if (screenVideoRef.current && screenStream) {
-      screenVideoRef.current.srcObject = screenStream;
-      screenVideoRef.current.play(); // Forzar reproducción
-    }
-  }, [screenStream]);
-
-  // Iniciar pantalla compartida con las restricciones actuales
-  const startSharing = () => {
-    startScreenShare({
-      width: selectedResolution.width,
-      height: selectedResolution.height,
-      frameRate: selectedFPS,
-    });
-  };
+  } = useScreenShareManager(
+    peerConnection,
+    screenVideoRef,
+    selectedResolution,
+    selectedFPS
+  );
 
   return (
     <div>
