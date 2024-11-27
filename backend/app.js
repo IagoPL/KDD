@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require('cors');
 const connectDB = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
-const groupRoutes = require("./routes/groupRoutes");
 const callRoutes = require("./routes/callRoutes");
 
 // Inicializar la aplicación
@@ -24,7 +23,6 @@ app.use(express.json());
 
 // Rutas de la API
 app.use("/api/users", authRoutes);
-app.use("/api/groups", groupRoutes);
 app.use("/api/calls", callRoutes);
 
 // Exportar solo la aplicación
