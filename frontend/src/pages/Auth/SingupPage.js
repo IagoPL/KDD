@@ -2,28 +2,32 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const LoginPage = () => {
+const SignupPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
     try {
-      const response = await axios.post('/api/users/login', { email, password });
-      localStorage.setItem('token', response.data.token); // Guardar JWT en localStorage
-      navigate('/dashboard'); // Redirigir al dashboard
+      await axios.post('/api/users/signup', { email, password });
+      navigate('/login'); // Redirigir al login tras registrarse
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al iniciar sesión');
+      setError(err.response?.data?.message || 'Error al registrarse');
     }
   };
 
   return (
     <div>
-      <h2>Iniciar Sesión</h2>
+      <h2>Registrarse</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleSignup}>
         <div>
           <label>Correo Electrónico:</label>
           <input
@@ -42,13 +46,22 @@ const LoginPage = () => {
             required
           />
         </div>
-        <button type="submit">Ingresar</button>
+        <div>
+          <label>Confirmar Contraseña:</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">Registrarse</button>
       </form>
       <p>
-        ¿No tienes cuenta? <a href="/signup">Regístrate aquí</a>.
+        ¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a>.
       </p>
     </div>
   );
 };
 
-export default LoginPage;
+export default SignupPage;

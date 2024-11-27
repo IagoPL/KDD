@@ -1,29 +1,38 @@
 const express = require('express');
+const { check, validationResult } = require('express-validator');
+const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
 
-const activeRooms = {}; // Objeto en memoria para almacenar las salas activas
+const activeRooms = {};
 
-// Función para generar un ID de sala único
-function generateRoomId() {
-    return Math.random().toString(36).substring(2, 10); // Genera un ID aleatorio de 8 caracteres
-}
+// Middleware para manejar errores de validación
+const validateInputs = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+};
 
-// Función para verificar si una sala existe
-function roomExists(roomId) {
-    return activeRooms[roomId] !== undefined;
-}
-
-// Ruta para crear una nueva llamada
-router.post('/create', (req, res) => {
-    const roomId = generateRoomId();
-    activeRooms[roomId] = true; // Guarda la sala como activa
+// Crear una sala
+router.post('/create', authMiddleware, (req, res) => {
+    const roomId = Math.random().toString(36).substring(2, 10);
+    activeRooms[roomId] = { createdBy: req.user.id };
     res.status(201).json({ success: true, roomId });
 });
 
-// Ruta para unirse a una sala existente
-router.post('/join', (req, res) => {
+// Unirse a una sala
+router.post('/join', [
+    authMiddleware,
+    check('roomId')
+        .notEmpty()
+        .withMessage('El ID de la sala es obligatorio')
+        .isString()
+        .withMessage('El ID de la sala debe ser un texto válido'),
+    validateInputs
+], (req, res) => {
     const { roomId } = req.body;
-    if (roomExists(roomId)) {
+    if (activeRooms[roomId]) {
         res.status(200).json({ message: 'Unido a la sala', roomId });
     } else {
         res.status(404).json({ error: 'Sala no encontrada' });

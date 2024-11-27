@@ -25,12 +25,12 @@
   - [X]  `/groups/mygroups` (Obtener los grupos del usuario).
   - [X]  `/groups/add-member` (Añadir miembro a un grupo).
 
-## **4. Frontend - Estructura Inicial** - **Listo ✅**
+## **4. Frontend - Estructura Inicial** - **Parcialmente Completo ⏳**
 
 * [X]  Crear el proyecto **React** para la interfaz de usuario.
 * [X]  Configurar la estructura de carpetas y **Redux** para la gestión del estado global.
-* [X]  Implementar la **pantalla de inicio de sesión y registro**.
-* [X]  Crear la **UI de la página principal** para la gestión de grupos y configuración de llamadas.
+* [ ]  Implementar la **pantalla de inicio de sesión y registro**.
+* [ ]  Crear la **UI de la página principal** para la gestión de grupos y configuración de llamadas.
 
 ## **5. WebRTC y Comunicación en Tiempo Real** - **Pendiente ⏳**
 

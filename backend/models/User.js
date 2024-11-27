@@ -4,16 +4,23 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: true,
-        unique: true
+        required: [true, 'El correo es obligatorio'],
+        unique: true,
+        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Debe ser un correo válido']
     },
     password: {
         type: String,
-        required: true
+        required: [true, 'La contraseña es obligatoria'],
+        minlength: [6, 'La contraseña debe tener al menos 6 caracteres']
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
     }
-});
+}, { timestamps: true });
 
-// Método para encriptar la contraseña antes de guardar
+// Encriptar la contraseña antes de guardar
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
     this.password = await bcrypt.hash(this.password, 10);
